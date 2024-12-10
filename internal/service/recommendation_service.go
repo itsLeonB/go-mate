@@ -98,7 +98,7 @@ func (rsn *recommendationServiceNaive) LogAction(
 		return nil, err
 	}
 	if log == nil {
-		return nil, apperror.LogNotFoundError(user.ID, request.RecommendedUserID)
+		return nil, apperror.LogNotFoundError(request.RecommendedUserID)
 	}
 	if log.Status != appconstant.LogStatusViewed {
 		return nil, apperror.LogAlreadyUpdatedError(user.ID.String(), request.RecommendedUserID.String())
