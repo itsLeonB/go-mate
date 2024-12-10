@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/gin-gonic/gin"
+	"github.com/itsLeonB/go-mate/internal/appconstant"
 	"github.com/itsLeonB/go-mate/internal/apperror"
 	"github.com/itsLeonB/go-mate/internal/entity"
 	"github.com/itsLeonB/go-mate/internal/model"
@@ -70,7 +71,7 @@ func (as *authServiceImpl) Login(ctx context.Context, request *model.LoginReques
 		return nil, apperror.LoginError()
 	}
 
-	token, err := as.jwt.CreateToken(gin.H{"id": user.ID})
+	token, err := as.jwt.CreateToken(gin.H{appconstant.ContextUserID: user.ID})
 	if err != nil {
 		return nil, eris.Wrap(err, "error creating token")
 	}

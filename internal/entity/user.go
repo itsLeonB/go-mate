@@ -9,7 +9,6 @@ import (
 
 type User struct {
 	ID        uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
-	Name      string
 	Email     string
 	Password  string
 	CreatedAt time.Time

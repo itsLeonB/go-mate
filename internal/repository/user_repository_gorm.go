@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/itsLeonB/go-mate/internal/entity"
 	"github.com/rotisserie/eris"
 	"gorm.io/gorm"
@@ -46,6 +47,17 @@ func (urg *userRepositoryGorm) FindAll(ctx context.Context) ([]*entity.User, err
 	err := urg.db.WithContext(ctx).Find(&users).Error
 	if err != nil {
 		return nil, eris.Wrap(err, "error finding all users")
+	}
+
+	return users, nil
+}
+
+func (urg *userRepositoryGorm) FindByIDs(ctx context.Context, ids uuid.UUIDs) ([]*entity.User, error) {
+	var users []*entity.User
+
+	err := urg.db.WithContext(ctx).Find(&users, "id IN ?", ids).Error
+	if err != nil {
+		return nil, eris.Wrap(err, "error finding users by ids")
 	}
 
 	return users, nil

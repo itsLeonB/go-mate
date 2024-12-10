@@ -44,3 +44,12 @@ func InternalServerError() *AppError {
 		Message:        "Unexpected error occurred",
 	}
 }
+
+func UnauthorizedError(details any) *AppError {
+	return &AppError{
+		HttpStatusCode: http.StatusUnauthorized,
+		Type:           "UnauthorizedError",
+		Message:        "Unauthorized",
+		Details:        details,
+	}
+}

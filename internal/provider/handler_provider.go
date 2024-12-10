@@ -11,6 +11,7 @@ type Handlers struct {
 
 func ProvideHandlers(services *Services) *Handlers {
 	return &Handlers{
-		Auth: handler.NewAuthHandler(services.Auth),
+		Auth:           handler.NewAuthHandler(services.Auth),
+		Recommendation: handler.NewRecommendationHandler(services.Recommendation),
 	}
 }
