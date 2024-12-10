@@ -53,3 +53,12 @@ func UnauthorizedError(details any) *AppError {
 		Details:        details,
 	}
 }
+
+func NotFoundError(details any) *AppError {
+	return &AppError{
+		HttpStatusCode: http.StatusNotFound,
+		Type:           "NotFoundError",
+		Message:        "Resource not found",
+		Details:        details,
+	}
+}

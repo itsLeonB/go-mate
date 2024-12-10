@@ -14,8 +14,9 @@ type AuthService interface {
 
 type RecommendationService interface {
 	GetUserRecommendations(ctx context.Context) ([]*model.UserResponse, error)
+	LogAction(ctx context.Context, request *model.LogActionRequest) (*model.RecommendationLogResponse, error)
 }
 
 type ScoringService interface {
-	ScoreAndSortUsers(ctx context.Context, users []*entity.User) []*entity.User
+	ScoreAndSortUsers(ctx context.Context, users []*entity.User) ([]*entity.User, error)
 }

@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE INDEX IF NOT EXISTS users_email_idx ON users (email);
 
-CREATE TYPE recommendation_log_status AS ENUM ('pending', 'accepted', 'rejected');
+CREATE TYPE recommendation_log_status AS ENUM ('viewed', 'liked', 'passed');
 
 CREATE TABLE IF NOT EXISTS recommendation_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

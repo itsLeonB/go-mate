@@ -5,10 +5,12 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/itsLeonB/go-mate/internal/appconstant"
+	"github.com/itsLeonB/go-mate/internal/apperror"
+	"github.com/itsLeonB/go-mate/internal/entity"
 	"github.com/itsLeonB/go-mate/internal/mapper"
 	"github.com/itsLeonB/go-mate/internal/model"
 	"github.com/itsLeonB/go-mate/internal/repository"
-	"github.com/rotisserie/eris"
+	"github.com/itsLeonB/go-mate/internal/util"
 )
 
 type recommendationServiceNaive struct {
@@ -30,12 +32,12 @@ func NewRecommendationServiceNaive(
 }
 
 func (rsn *recommendationServiceNaive) GetUserRecommendations(ctx context.Context) ([]*model.UserResponse, error) {
-	userID, err := uuid.Parse(ctx.Value(appconstant.ContextUserID).(string))
+	user, err := rsn.validateUser(ctx)
 	if err != nil {
-		return nil, eris.Wrap(err, "error while parsing user id")
+		return nil, err
 	}
 
-	todayLogs, err := rsn.recommendationLogRepository.FindTodayLogsByUserID(ctx, userID)
+	todayLogs, err := rsn.recommendationLogRepository.FindTodayLogsByUserID(ctx, user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +45,7 @@ func (rsn *recommendationServiceNaive) GetUserRecommendations(ctx context.Contex
 	if len(todayLogs) > 0 {
 		var availableToView uuid.UUIDs
 		for _, log := range todayLogs {
-			if log.Status == appconstant.LogStatusPending {
+			if log.Status == appconstant.LogStatusViewed {
 				availableToView = append(availableToView, log.RecommendedUserID)
 			}
 		}
@@ -64,8 +66,15 @@ func (rsn *recommendationServiceNaive) GetUserRecommendations(ctx context.Contex
 		return nil, err
 	}
 
-	recommendedUsers := rsn.scoringService.ScoreAndSortUsers(ctx, users)
-	recommendationLogs := mapper.MapUsersToRecommendationLogs(userID, recommendedUsers)
+	recommendedUsers, err := rsn.scoringService.ScoreAndSortUsers(ctx, users)
+	if err != nil {
+		return nil, err
+	}
+	if len(recommendedUsers) == 0 {
+		return []*model.UserResponse{}, nil
+	}
+
+	recommendationLogs := mapper.NewRecommendationLogs(user.ID, recommendedUsers)
 
 	err = rsn.recommendationLogRepository.InsertLogs(ctx, recommendationLogs)
 	if err != nil {
@@ -73,4 +82,49 @@ func (rsn *recommendationServiceNaive) GetUserRecommendations(ctx context.Contex
 	}
 
 	return mapper.MapUsersToResponses(recommendedUsers), nil
+}
+
+func (rsn *recommendationServiceNaive) LogAction(
+	ctx context.Context,
+	request *model.LogActionRequest,
+) (*model.RecommendationLogResponse, error) {
+	user, err := rsn.validateUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	log, err := rsn.recommendationLogRepository.FindTodayLogByUserIDAndRecommendedUserID(ctx, user.ID, request.RecommendedUserID)
+	if err != nil {
+		return nil, err
+	}
+	if log == nil {
+		return nil, apperror.LogNotFoundError(user.ID, request.RecommendedUserID)
+	}
+	if log.Status != appconstant.LogStatusViewed {
+		return nil, apperror.LogAlreadyUpdatedError(user.ID.String(), request.RecommendedUserID.String())
+	}
+
+	log.Status = request.Action
+	err = rsn.recommendationLogRepository.Update(ctx, log)
+	if err != nil {
+		return nil, err
+	}
+
+	return mapper.MapRecommendationLogToResponse(log), nil
+}
+
+func (rsn *recommendationServiceNaive) validateUser(ctx context.Context) (*entity.User, error) {
+	userID, err := util.GetUUIDFromContext(ctx, appconstant.ContextUserID)
+	if err != nil {
+		return nil, err
+	}
+	user, err := rsn.userRepository.FindByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, apperror.UserNotFoundError(userID)
+	}
+
+	return user, nil
 }

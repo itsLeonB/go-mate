@@ -1,5 +1,5 @@
 package appconstant
 
-const LogStatusPending = "pending"
-const LogStatusAccepted = "accepted"
-const LogStatusRejected = "rejected"
+const LogStatusViewed = "viewed"
+const LogStatusLiked = "liked"
+const LogStatusPassed = "passed"
