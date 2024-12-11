@@ -17,7 +17,8 @@ This project uses the following tech stacks:
 
 ## Project Structure
 
-- `/cmd` - Entry point of the API.
+- `/ci` - Files related to deployment and continuous integration
+- `/cmd` - Entry point `main.go` of the API.
 - `/db` - SQL files for database, including migrations and seeds.
 - `/internal` - Internal code for the API:
   - `/appconstant` - Constant values for business logics.
@@ -31,6 +32,7 @@ This project uses the following tech stacks:
   - `/repository` - Structs for interacting with database, current implementation uses Gorm.
   - `/service` - Main app code for business logic.
   - `/util` - Utility functions and helpers.
+- `/tests` - Go test files.
 
 ## Installation
 
@@ -49,6 +51,11 @@ For local development:
     ```sh
     go run cmd/app/main.go
     ```
+
+Or simply use Docker:
+```sh
+docker build -f ci/Dockerfile -t go-mate . && docker run -d --name go-mate go-mate
+```
 
 ## Documentation
 
