@@ -9,6 +9,12 @@ This project uses the following tech stacks:
 - Go 1.23
 - PostgreSQL 16
 
+## Features
+
+- User registration and login
+- User matcher/recommendation, with pass/like functionality
+- Subscriptions for extra features and boosts
+
 ## Project Structure
 
 - `/cmd` - Entry point of the API.
