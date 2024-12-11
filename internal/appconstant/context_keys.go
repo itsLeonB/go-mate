@@ -1,3 +1,5 @@
 package appconstant
 
-const ContextUserID = "userID"
+const (
+	ContextUserID = "userID"
+)

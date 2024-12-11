@@ -55,7 +55,7 @@ func (urg *userRepositoryGorm) FindAll(ctx context.Context) ([]*entity.User, err
 func (urg *userRepositoryGorm) FindByID(ctx context.Context, id uuid.UUID) (*entity.User, error) {
 	var user entity.User
 
-	err := urg.db.WithContext(ctx).First(&user, "id = ?", id).Error
+	err := urg.db.WithContext(ctx).Preload("Subscriptions").First(&user, "id = ?", id).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil

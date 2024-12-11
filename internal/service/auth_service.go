@@ -78,3 +78,19 @@ func (as *authServiceImpl) Login(ctx context.Context, request *model.LoginReques
 
 	return model.NewLoginResponse(token), nil
 }
+
+func (as *authServiceImpl) ValidateUser(ctx context.Context) (*entity.User, error) {
+	userID, err := util.GetUUIDFromContext(ctx, appconstant.ContextUserID)
+	if err != nil {
+		return nil, err
+	}
+	user, err := as.userRepository.FindByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, apperror.UserNotFoundError(userID)
+	}
+
+	return user, nil
+}

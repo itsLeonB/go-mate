@@ -17,4 +17,7 @@ func SetupRoutes(router *gin.Engine, handlers *provider.Handlers, utils *provide
 	recommendationRoutes := router.Group("/recommendations", middleware.Authorize(utils.JWT))
 	recommendationRoutes.GET("", handlers.Recommendation.HandleGetUserRecommendations())
 	recommendationRoutes.POST("", handlers.Recommendation.HandleLogAction())
+
+	subscriptionRoutes := router.Group("/subscriptions", middleware.Authorize(utils.JWT))
+	subscriptionRoutes.POST("", handlers.Subscription.HandleAddSubscription())
 }

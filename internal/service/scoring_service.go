@@ -15,7 +15,7 @@ func NewScoringServiceNaive() ScoringService {
 	return &scoringServiceNaive{}
 }
 
-func (ssn *scoringServiceNaive) ScoreAndSortUsers(ctx context.Context, users []*entity.User) ([]*entity.User, error) {
+func (ssn *scoringServiceNaive) ScoreAndSortUsers(ctx context.Context, users []*entity.User, isExtraRecommendation bool) ([]*entity.User, error) {
 	// Naive implementation of scoring and sorting users
 	userID, err := util.GetUUIDFromContext(ctx, appconstant.ContextUserID)
 	if err != nil {
@@ -30,9 +30,14 @@ func (ssn *scoringServiceNaive) ScoreAndSortUsers(ctx context.Context, users []*
 		}
 	}
 
-	if len(scoredUsers) < 10 {
+	maxUserCount := appconstant.MaxUserCountPerDay
+	if isExtraRecommendation {
+		maxUserCount *= appconstant.MaxUserCountExtraMultiplier
+	}
+
+	if len(scoredUsers) < maxUserCount {
 		return scoredUsers, nil
 	}
 
-	return scoredUsers[:10], nil
+	return scoredUsers[:maxUserCount], nil
 }

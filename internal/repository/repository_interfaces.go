@@ -21,3 +21,7 @@ type RecommendationLogRepository interface {
 	FindTodayLogByUserIDAndRecommendedUserID(ctx context.Context, userID uuid.UUID, recommendedUserID uuid.UUID) (*entity.RecommendationLog, error)
 	Update(ctx context.Context, log *entity.RecommendationLog) error
 }
+
+type SubscriptionRepository interface {
+	Insert(ctx context.Context, subscription *entity.UserSubscription) error
+}

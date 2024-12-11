@@ -6,33 +6,37 @@ import (
 	"github.com/google/uuid"
 	"github.com/itsLeonB/go-mate/internal/appconstant"
 	"github.com/itsLeonB/go-mate/internal/apperror"
-	"github.com/itsLeonB/go-mate/internal/entity"
 	"github.com/itsLeonB/go-mate/internal/mapper"
 	"github.com/itsLeonB/go-mate/internal/model"
 	"github.com/itsLeonB/go-mate/internal/repository"
-	"github.com/itsLeonB/go-mate/internal/util"
 )
 
 type recommendationServiceNaive struct {
 	userRepository              repository.UserRepository
 	scoringService              ScoringService
 	recommendationLogRepository repository.RecommendationLogRepository
+	authService                 AuthService
+	subscriptionService         SubscriptionService
 }
 
 func NewRecommendationServiceNaive(
 	userRepository repository.UserRepository,
 	scoringService ScoringService,
 	recommendationLogRepository repository.RecommendationLogRepository,
+	authService AuthService,
+	subscriptionService SubscriptionService,
 ) RecommendationService {
 	return &recommendationServiceNaive{
 		userRepository:              userRepository,
 		scoringService:              scoringService,
 		recommendationLogRepository: recommendationLogRepository,
+		authService:                 authService,
+		subscriptionService:         subscriptionService,
 	}
 }
 
 func (rsn *recommendationServiceNaive) GetUserRecommendations(ctx context.Context) ([]*model.UserResponse, error) {
-	user, err := rsn.validateUser(ctx)
+	user, err := rsn.authService.ValidateUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +70,7 @@ func (rsn *recommendationServiceNaive) GetUserRecommendations(ctx context.Contex
 		return nil, err
 	}
 
-	recommendedUsers, err := rsn.scoringService.ScoreAndSortUsers(ctx, users)
+	recommendedUsers, err := rsn.scoringService.ScoreAndSortUsers(ctx, users, IsExtraRecommendation(user))
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +92,7 @@ func (rsn *recommendationServiceNaive) LogAction(
 	ctx context.Context,
 	request *model.LogActionRequest,
 ) (*model.RecommendationLogResponse, error) {
-	user, err := rsn.validateUser(ctx)
+	user, err := rsn.authService.ValidateUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -111,20 +115,4 @@ func (rsn *recommendationServiceNaive) LogAction(
 	}
 
 	return mapper.MapRecommendationLogToResponse(log), nil
-}
-
-func (rsn *recommendationServiceNaive) validateUser(ctx context.Context) (*entity.User, error) {
-	userID, err := util.GetUUIDFromContext(ctx, appconstant.ContextUserID)
-	if err != nil {
-		return nil, err
-	}
-	user, err := rsn.userRepository.FindByID(ctx, userID)
-	if err != nil {
-		return nil, err
-	}
-	if user == nil {
-		return nil, apperror.UserNotFoundError(userID)
-	}
-
-	return user, nil
 }

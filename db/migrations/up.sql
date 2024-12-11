@@ -26,3 +26,17 @@ ON recommendation_logs (user_id, created_at);
 
 CREATE INDEX recommendation_logs_user_recommended_created_idx
 ON recommendation_logs (user_id, recommended_user_id, created_at);
+
+CREATE TYPE subscription_model AS ENUM ('extra_appearance', 'extra_recommendations');
+
+CREATE TABLE IF NOT EXISTS user_subscriptions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id),
+    model subscription_model NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    expired_at TIMESTAMPTZ NOT NULL,
+    deleted_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS user_subscriptions_user_id_idx ON user_subscriptions (user_id);

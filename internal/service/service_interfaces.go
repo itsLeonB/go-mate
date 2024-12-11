@@ -10,6 +10,7 @@ import (
 type AuthService interface {
 	Register(ctx context.Context, request *model.RegisterRequest) error
 	Login(ctx context.Context, request *model.LoginRequest) (*model.LoginResponse, error)
+	ValidateUser(ctx context.Context) (*entity.User, error)
 }
 
 type RecommendationService interface {
@@ -18,5 +19,9 @@ type RecommendationService interface {
 }
 
 type ScoringService interface {
-	ScoreAndSortUsers(ctx context.Context, users []*entity.User) ([]*entity.User, error)
+	ScoreAndSortUsers(ctx context.Context, users []*entity.User, isExtraRecommendation bool) ([]*entity.User, error)
+}
+
+type SubscriptionService interface {
+	AddSubscription(ctx context.Context, request *model.NewSubscriptionRequest) (*model.UserSubscriptionResponse, error)
 }
