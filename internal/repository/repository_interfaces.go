@@ -24,4 +24,5 @@ type RecommendationLogRepository interface {
 
 type SubscriptionRepository interface {
 	Insert(ctx context.Context, subscription *entity.UserSubscription) error
+	FindByUserIDandModel(ctx context.Context, userID uuid.UUID, model string) ([]*entity.UserSubscription, error)
 }

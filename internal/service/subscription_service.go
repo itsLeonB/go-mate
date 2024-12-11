@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/itsLeonB/go-mate/internal/appconstant"
+	"github.com/itsLeonB/go-mate/internal/apperror"
 	"github.com/itsLeonB/go-mate/internal/entity"
 	"github.com/itsLeonB/go-mate/internal/mapper"
 	"github.com/itsLeonB/go-mate/internal/model"
@@ -38,6 +39,16 @@ func (ss *subscriptionServiceImpl) AddSubscription(ctx context.Context, request 
 		ExpiredAt: getExpiry(request.Plan),
 	}
 
+	existingSubscriptions, err := ss.subscriptionRepository.FindByUserIDandModel(ctx, user.ID, request.Model)
+	if err != nil {
+		return nil, err
+	}
+
+	err = validateExistingSubscriptions(existingSubscriptions, request.Model)
+	if err != nil {
+		return nil, err
+	}
+
 	err = ss.subscriptionRepository.Insert(ctx, subscription)
 	if err != nil {
 		return nil, err
@@ -65,4 +76,18 @@ func getExpiry(plan string) time.Time {
 	default:
 		return time.Time{}
 	}
+}
+
+func validateExistingSubscriptions(subscriptions []*entity.UserSubscription, model string) error {
+	if len(subscriptions) == 0 {
+		return nil
+	}
+
+	for _, subscription := range subscriptions {
+		if subscription.Model == model && subscription.ExpiredAt.After(time.Now()) {
+			return apperror.SubscriptionAlreadyExistsError(subscription.Model, subscription.ExpiredAt)
+		}
+	}
+
+	return nil
 }
