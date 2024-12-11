@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/itsLeonB/go-mate/internal/server"
+	"github.com/itsLeonB/go-mate/internal/delivery/http/server"
 	_ "github.com/joho/godotenv/autoload"
 )
 
